@@ -1,0 +1,58 @@
+@page "/puzzle"
+
+<link href="css/puzzle.css" rel="stylesheet" />
+
+<h1>Puzzle</h1>
+
+<div class="puzzle">
+    <table>
+        <tbody>
+        @foreach (var rows in Columns)
+        {
+            <tr>
+                @foreach (var row in rows)
+                {
+                    <td class="@(row.IsHide ? "hide" : "")">
+                        @row.Number
+                    </td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+    <div class="actions">
+        <button class="btn btn-danger" onclick="@Shuffle">
+            Embaralhar
+        </button>
+        <button class="btn btn-dark" onclick="@Build">
+            Montar
+        </button>
+    </div>
+</div>
+
+@functions {
+    public PuzzlePiece[][] Columns { get; set; }
+
+    protected override void OnInit()
+    {
+        PuzzleController.own.CreatePuzzle();
+        UpdateColumns();
+    }
+
+    private void Build()
+    {
+        PuzzleController.own.BuildPuzzle();
+        UpdateColumns();
+    }
+
+    private void Shuffle()
+    {
+        PuzzleController.own.ShufflePuzzle();
+        UpdateColumns();
+    }
+
+    private void UpdateColumns()
+    {
+        Columns = PuzzleController.own.GetCurrentPuzzleColumns();
+    }
+}
