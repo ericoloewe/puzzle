@@ -18,7 +18,7 @@ namespace puzzle_logic
         {
             Columns = new List<IList<PuzzlePiece>>();
 
-            int currentIndex = 1;
+            int currentIndex = 0;
 
             for (int i = 0; i < Size; i++)
             {
