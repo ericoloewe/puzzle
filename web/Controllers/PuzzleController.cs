@@ -8,8 +8,9 @@ namespace web.Controllers
 {
     public class PuzzleController
     {
-        public static PuzzleController own = new PuzzleController();
         public Puzzle Current { get; private set; }
+        public PuzzlePiece[][] CurrentPuzzleColumns { get { return Current.Columns; } }
+        public static PuzzleController own = new PuzzleController();
 
         public void BuildPuzzle()
         {
@@ -24,11 +25,6 @@ namespace web.Controllers
         public void ShufflePuzzle()
         {
             Current.Shuffle();
-        }
-
-        public PuzzlePiece[][] GetCurrentPuzzleColumns()
-        {
-            return Current.Columns.Select(c => c.ToArray()).ToArray();
         }
     }
 }
