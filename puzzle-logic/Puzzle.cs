@@ -8,7 +8,7 @@ namespace puzzle_logic
         public PuzzlePiece[][] Columns { get; private set; }
         public int Size { get; private set; }
         private PuzzlePiece hidePiece;
-        private Random random;
+        private Random random = new Random();
         private IList<int> randomPiecePositions;
 
         public Puzzle(int size = 3)
@@ -27,13 +27,16 @@ namespace puzzle_logic
             for (int i = 0; i < Columns.Length; i++)
             {
                 nextColumns[i] = new PuzzlePiece[Size];
+            }
 
+            for (int i = 0; i < Columns.Length; i++)
+            {
                 for (int j = 0; j < Columns[i].Length; j++)
                 {
                     var currentPiece = Columns[i][j];
-                    var nextPosition = this.GetNextRandomPosition();
-                    var nextColumn = nextPosition % Size;
-                    var nextRow = nextPosition / Size;
+                    decimal nextPosition = this.GetNextRandomPosition();
+                    var nextColumn = (int)Math.Floor(nextPosition % Size);
+                    var nextRow = (int)Math.Floor(nextPosition / Size);
 
                     nextColumns[nextColumn][nextRow] = currentPiece;
                 }
@@ -45,19 +48,14 @@ namespace puzzle_logic
         private int GetNextRandomPosition()
         {
             var nextPosition = random.Next(Size * Size);
-            var isNewPosition = randomPiecePositions.Contains(nextPosition);
+            var isNewPosition = !randomPiecePositions.Contains(nextPosition);
 
-            if (isNewPosition)
+            while (randomPiecePositions.Contains(nextPosition))
             {
-                randomPiecePositions.Add(nextPosition);
+                nextPosition = random.Next(Size * Size);
             }
-            else
-            {
-                while (randomPiecePositions.Contains(nextPosition))
-                {
-                    nextPosition = random.Next(Size * Size);
-                }
-            }
+
+            randomPiecePositions.Add(nextPosition);
 
             return nextPosition;
         }
