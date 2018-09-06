@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace puzzle_logic
 {
@@ -17,6 +18,30 @@ namespace puzzle_logic
             FillColumnsAndRows();
         }
 
+        public bool IsDone()
+        {
+            var isDone = true;
+            var current = Columns.First().First().Number;
+            var last = Columns.First().First().Number;
+
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    last = current;
+                    current = Columns[i][j].Number;
+
+                    if (last > current && last != current)
+                    {
+                        isDone = false;
+                        break;
+                    }
+                }
+            }
+
+            return isDone;
+        }
+
         public void Shuffle()
         {
             var currentColumns = Columns.Clone();
@@ -24,14 +49,14 @@ namespace puzzle_logic
 
             randomPiecePositions = new List<int>();
 
-            for (int i = 0; i < Columns.Length; i++)
+            for (int i = 0; i < Size; i++)
             {
                 nextColumns[i] = new PuzzlePiece[Size];
             }
 
-            for (int i = 0; i < Columns.Length; i++)
+            for (int i = 0; i < Size; i++)
             {
-                for (int j = 0; j < Columns[i].Length; j++)
+                for (int j = 0; j < Size; j++)
                 {
                     var currentPiece = Columns[i][j];
                     decimal nextPosition = this.GetNextRandomPosition();
@@ -45,24 +70,60 @@ namespace puzzle_logic
             Columns = nextColumns;
         }
 
-        private int GetNextRandomPosition()
+        public void SlideDown()
         {
-            var nextPosition = random.Next(Size * Size);
-            var isNewPosition = !randomPiecePositions.Contains(nextPosition);
+            var position = GetPiecePosition(hidePiece);
+            var nextRow = position.Row + 1;
 
-            while (randomPiecePositions.Contains(nextPosition))
+            if (nextRow > (Size - 1))
             {
-                nextPosition = random.Next(Size * Size);
+                throw new InvalidOperationException("It's not possible to move to a invalid position");
             }
 
-            randomPiecePositions.Add(nextPosition);
-
-            return nextPosition;
+            Columns[position.Column][position.Row] = Columns[nextRow][position.Row];
+            Columns[nextRow][position.Row] = hidePiece;
         }
 
-        public async void Build()
+        public void SlideLeft()
         {
-            throw new NotImplementedException();
+            var position = GetPiecePosition(hidePiece);
+            var nextColumn = position.Column - 1;
+
+            if (nextColumn < 0)
+            {
+                throw new InvalidOperationException("It's not possible to move to a invalid position");
+            }
+
+            Columns[position.Column][position.Row] = Columns[nextColumn][position.Row];
+            Columns[nextColumn][position.Row] = hidePiece;
+        }
+
+        public void SlideRight()
+        {
+            var position = GetPiecePosition(hidePiece);
+            var nextColumn = position.Column + 1;
+
+            if (nextColumn > (Size - 1))
+            {
+                throw new InvalidOperationException("It's not possible to move to a invalid position");
+            }
+
+            Columns[position.Column][position.Row] = Columns[nextColumn][position.Row];
+            Columns[nextColumn][position.Row] = hidePiece;
+        }
+
+        public void SlideUp()
+        {
+            var position = GetPiecePosition(hidePiece);
+            var nextRow = position.Row - 1;
+
+            if (nextRow < 0)
+            {
+                throw new InvalidOperationException("It's not possible to move to a invalid position");
+            }
+
+            Columns[position.Column][position.Row] = Columns[nextRow][position.Row];
+            Columns[nextRow][position.Row] = hidePiece;
         }
 
         private void FillColumnsAndRows()
@@ -94,9 +155,35 @@ namespace puzzle_logic
             Columns = columns;
         }
 
+        private int GetNextRandomPosition()
+        {
+            var nextPosition = random.Next(Size * Size);
+            var isNewPosition = !randomPiecePositions.Contains(nextPosition);
+
+            while (randomPiecePositions.Contains(nextPosition))
+            {
+                nextPosition = random.Next(Size * Size);
+            }
+
+            randomPiecePositions.Add(nextPosition);
+
+            return nextPosition;
+        }
+
+        private PiecePosition GetPiecePosition(PuzzlePiece hidePiece)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool IsHidePiece(int i, int j)
         {
             return i == 0 && j == 0;
+        }
+
+        private class PiecePosition
+        {
+            public int Column { get; set; }
+            public int Row { get; set; }
         }
     }
 }
