@@ -9,7 +9,7 @@ namespace puzzle_logic
     public class HardCodeBuilder
     {
         public Puzzle Puzzle { get; private set; }
-        private Task buildThread;
+        private Task<IList<Puzzle>> buildTask;
         private Tree<Puzzle> tree;
         private IDictionary<string, Puzzle> puzzleRepeatControl;
 
@@ -18,28 +18,28 @@ namespace puzzle_logic
             Puzzle = new Puzzle();
         }
 
-        public async Task Build(PuzzleEvents events)
+        public async Task<IList<Puzzle>> Build(PuzzleEvents events)
         {
             tree = new Tree<Puzzle>();
             puzzleRepeatControl = new Dictionary<string, Puzzle>();
-            buildThread = new Task(() => StartToBuildPuzzleTree(events));
-            buildThread.Start();
-            buildThread.Wait();
+            buildTask = new Task<IList<Puzzle>>(() => StartToBuildPuzzleTree(events));
+            buildTask.Start();
+            buildTask.Wait();
+
+            return buildTask.Result;
         }
 
-        private void StartToBuildPuzzleTree(PuzzleEvents events)
+        private IList<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events)
         {
-            events.onStart.Invoke(Puzzle);
-
             var parent = tree.Insert(Puzzle);
-            var puzzle = StartToBuildPuzzleTreeNonRecursive(events, parent);
+            var puzzleNode = StartToBuildPuzzleTreeNonRecursive(events, parent);
 
-            if (puzzle == null)
+            if (puzzleNode == null)
             {
                 throw new Exception("There isn't a solution for this puzzle");
             }
 
-            events.onFinish.Invoke(puzzle.Data);
+            return tree.GetNodePathToRoot(puzzleNode);
         }
 
         #region recursive

@@ -23,6 +23,19 @@ namespace puzzle_logic
 
             return newNode;
         }
+
+        public IList<Puzzle> GetNodePathToRoot(TreeNode<Puzzle> puzzleNode)
+        {
+            IList<Puzzle> pathToRoot = new List<Puzzle>();
+
+            do
+            {
+                pathToRoot.Add(puzzleNode.Data);
+                puzzleNode = puzzleNode.Parent;
+            } while (puzzleNode != null);
+
+            return pathToRoot;
+        }
     }
 
     public class TreeNode<T>

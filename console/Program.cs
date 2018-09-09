@@ -23,15 +23,22 @@ namespace console
 
         private static async Task RunHardCodePuzzleBuild()
         {
-            await hardCodePuzzle.Build(new PuzzleEvents()
+            LogPuzzleStart(hardCodePuzzle.Puzzle);
+
+            var puzzleSolutionRevertPath = await hardCodePuzzle.Build(new PuzzleEvents()
             {
-                onFinish = LogPuzzleFinish,
-                onStart = LogPuzzleStart,
                 onStateChange = PrintPuzzle
             });
+
+            LogPuzzleFinish();
+
+            foreach (var puzzle in puzzleSolutionRevertPath.Reverse())
+            {
+                PrintPuzzle(puzzle);
+            }
         }
 
-        static void LogPuzzleFinish(Puzzle puzzle)
+        static void LogPuzzleFinish()
         {
             Stopwatch.Stop();
             Console.WriteLine($"Elapsed: {Stopwatch.Elapsed}");
@@ -41,8 +48,6 @@ namespace console
         {
             Stopwatch.Start();
             Console.WriteLine("Start build");
-            Console.WriteLine("Shuffled puzzle: ");
-            PrintPuzzle();
         }
 
         static void PrintPuzzle()
