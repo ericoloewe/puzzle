@@ -27,7 +27,7 @@ namespace console
         static void LogPuzzleFinish(PuzzlePiece[][] rows)
         {
             Stopwatch.Stop();
-            Console.WriteLine(Stopwatch.Elapsed);
+            Console.WriteLine($"Elapsed: {Stopwatch.Elapsed}");
         }
 
         static void LogPuzzleStart(PuzzlePiece[][] obj)
@@ -49,7 +49,7 @@ namespace console
             {
                 for (int j = 0; j < rows[i].Length; j++)
                 {
-                    Console.WriteLine($"i: {i}; j: {j}; piece: {rows[i][j].Number}; ");
+                    Console.Write($"{{i: {i}, j: {j}, piece: {rows[i][j].Number}}} ");
                 }
 
                 Console.Write("\n");
