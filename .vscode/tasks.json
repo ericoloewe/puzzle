@@ -13,7 +13,7 @@
             },
             "problemMatcher": "$msCompile",
             "options": {
-                "cwd": "${workspaceFolder}/trabalho-i/console"
+                "cwd": "${workspaceFolder}/console"
             }
         },
         {
@@ -26,7 +26,7 @@
             },
             "problemMatcher": "$msCompile",
             "options": {
-                "cwd": "${workspaceFolder}/trabalho-i/web"
+                "cwd": "${workspaceFolder}/web"
             }
         }
     ]
