@@ -34,7 +34,12 @@ namespace puzzle_logic
             var parent = tree.Insert(Puzzle);
             var puzzle = StartToBuildPuzzleTree(events, parent);
 
-            events.onFinish.Invoke(Puzzle);
+            if (puzzle == null)
+            {
+                throw new Exception("There isn't a solution for this puzzle");
+            }
+
+            events.onFinish.Invoke(puzzle.Data);
         }
 
         private TreeNode<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events, TreeNode<Puzzle> parent)
@@ -46,7 +51,7 @@ namespace puzzle_logic
                 return null;
             }
 
-            puzzleRepeatControl.Add(parentPuzzle.ToString(), parentPuzzle);
+            AddPuzzleRepeatedList(parentPuzzle);
 
             foreach (var allowedMovement in parentPuzzle.AllowedMovements())
             {
@@ -55,24 +60,30 @@ namespace puzzle_logic
                 Console.WriteLine($"allowedMovement: {allowedMovement}");
                 puzzleChild.Move(allowedMovement);
 
-                var puzzleNode = tree.Insert(puzzleChild, parent);
-
-                if (puzzleChild.IsDone())
+                if (!IsARepeatedPuzzle(puzzleChild))
                 {
-                    return puzzleNode;
-                }
+                    var puzzleChildNode = tree.Insert(puzzleChild, parent);
 
-                events.onStateChange.Invoke(puzzleChild);
-                var childrenResolution = StartToBuildPuzzleTree(events, puzzleNode);
+                    if (puzzleChild.IsDone())
+                    {
+                        return puzzleChildNode;
+                    }
 
-                if (childrenResolution != null)
-                {
-                    return childrenResolution;
+                    events.onStateChange.Invoke(puzzleChild);
+                    var childrenResolution = StartToBuildPuzzleTree(events, puzzleChildNode);
+
+                    if (childrenResolution != null)
+                    {
+                        return childrenResolution;
+                    }
                 }
             }
 
             return null;
         }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private void AddPuzzleRepeatedList(Puzzle puzzle) => puzzleRepeatControl.Add(puzzle.ToString(), puzzle);
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         private bool IsARepeatedPuzzle(Puzzle puzzle) => puzzleRepeatControl.ContainsKey(puzzle.ToString());

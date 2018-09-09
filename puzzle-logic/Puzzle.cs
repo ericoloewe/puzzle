@@ -74,29 +74,13 @@ namespace puzzle_logic
         public void Move(MovementType movement)
         {
             var position = hidePiece.Position;
-            var nextPosition = (PiecePosition)position.Clone();
 
             if (!IsMovementAllowed(movement))
             {
                 throw new InvalidOperationException(INVALID_MOVEMENT_MESSAGE);
             }
 
-            switch (movement)
-            {
-                case MovementType.DOWN:
-                    nextPosition.Row = nextPosition.Row + 1;
-                    break;
-                case MovementType.LEFT:
-                    nextPosition.Column = nextPosition.Column - 1;
-                    break;
-                case MovementType.RIGHT:
-                    nextPosition.Column = nextPosition.Column + 1;
-                    break;
-                case MovementType.UP:
-                    nextPosition.Row = nextPosition.Row - 1;
-                    break;
-            }
-
+            var nextPosition = GetNextPositionByMovement(movement);
             var pieceToMove = Rows[nextPosition.Row][nextPosition.Column];
 
             Rows[position.Row][position.Column] = pieceToMove;
@@ -117,19 +101,30 @@ namespace puzzle_logic
                 nextRows[i] = new PuzzlePiece[Size];
             }
 
-            for (int i = 0; i < Size; i++)
-            {
-                for (int j = 0; j < Size; j++)
-                {
-                    var currentPiece = Rows[i][j];
-                    decimal nextPosition = this.GetNextRandomPosition();
-                    var nextColumn = (int)Math.Floor(nextPosition % Size);
-                    var nextRow = (int)Math.Floor(nextPosition / Size);
+            // for (int i = 0; i < Size; i++)
+            // {
+            //     for (int j = 0; j < Size; j++)
+            //     {
+            //         var currentPiece = Rows[i][j];
+            //         decimal nextPosition = this.GetNextRandomPosition();
+            //         var nextColumn = (int)Math.Floor(nextPosition % Size);
+            //         var nextRow = (int)Math.Floor(nextPosition / Size);
 
-                    nextRows[nextRow][nextColumn] = currentPiece;
-                    currentPiece.Position = new PiecePosition(nextRow, nextColumn);
-                }
-            }
+            //         nextRows[nextRow][nextColumn] = currentPiece;
+            //         currentPiece.Position = new PiecePosition(nextRow, nextColumn);
+            //     }
+            // }
+
+            // [[3,2,5],[0,4,1],[6,7,8]]
+            nextRows[0][0] = Rows[1][0];
+            nextRows[0][1] = Rows[0][2];
+            nextRows[0][2] = Rows[1][2];
+            nextRows[1][0] = Rows[0][0];
+            nextRows[1][1] = Rows[1][2];
+            nextRows[1][2] = Rows[0][1];
+            nextRows[2][0] = Rows[2][0];
+            nextRows[2][1] = Rows[2][1];
+            nextRows[2][2] = Rows[2][2];
 
             Rows = nextRows;
         }
@@ -164,6 +159,30 @@ namespace puzzle_logic
             Rows = rows;
         }
 
+        private PiecePosition GetNextPositionByMovement(MovementType movement)
+        {
+            var position = hidePiece.Position;
+            var nextPosition = (PiecePosition)position.Clone();
+
+            switch (movement)
+            {
+                case MovementType.DOWN:
+                    nextPosition.Row = nextPosition.Row + 1;
+                    break;
+                case MovementType.LEFT:
+                    nextPosition.Column = nextPosition.Column - 1;
+                    break;
+                case MovementType.RIGHT:
+                    nextPosition.Column = nextPosition.Column + 1;
+                    break;
+                case MovementType.UP:
+                    nextPosition.Row = nextPosition.Row - 1;
+                    break;
+            }
+
+            return nextPosition;
+        }
+
         private int GetNextRandomPosition()
         {
             var nextPosition = random.Next(Size * Size);
@@ -184,21 +203,21 @@ namespace puzzle_logic
         private bool IsMovementAllowed(MovementType movement)
         {
             var isMovementAllowed = false;
-            var position = hidePiece.Position;
+            var nextPosition = GetNextPositionByMovement(movement);
 
             switch (movement)
             {
                 case MovementType.DOWN:
-                    isMovementAllowed = (position.Row + 1 <= (Size - 1));
+                    isMovementAllowed = (nextPosition.Row < Size);
                     break;
                 case MovementType.LEFT:
-                    isMovementAllowed = (position.Column - 1 >= 0);
+                    isMovementAllowed = (nextPosition.Column >= 0);
                     break;
                 case MovementType.RIGHT:
-                    isMovementAllowed = (position.Column + 1 <= (Size - 1));
+                    isMovementAllowed = (nextPosition.Column < Size);
                     break;
                 case MovementType.UP:
-                    isMovementAllowed = (position.Row - 1 >= 0);
+                    isMovementAllowed = (nextPosition.Row >= 0);
                     break;
                 default:
                     throw new InvalidOperationException(INVALID_MOVEMENT_MESSAGE);
