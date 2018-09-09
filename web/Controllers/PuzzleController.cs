@@ -1,30 +1,36 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using puzzle_logic;
 
 namespace web.Controllers
 {
     public class PuzzleController
     {
-        public Puzzle Current { get; private set; }
-        public PuzzlePiece[][] CurrentPuzzleColumns { get { return Current.Rows; } }
         public static PuzzleController own = new PuzzleController();
+        public Stopwatch Stopwatch { get; private set; }
+        public HardCodeBuilder HardCodePuzzle { get; private set; }
 
-        public void BuildPuzzle()
+        public PuzzleController()
         {
-            Current.Build();
+            HardCodePuzzle = new HardCodeBuilder();
+            Stopwatch = new Stopwatch();
         }
 
-        public void CreatePuzzle()
+        public async Task<IList<Puzzle>> BuildPuzzle(Action<Puzzle> onChange)
         {
-            Current = new Puzzle();
+            return await HardCodePuzzle.Build(new PuzzleEvents()
+            {
+                onStateChange = onChange
+            });
         }
 
         public void ShufflePuzzle()
         {
-            Current.Shuffle();
+            HardCodePuzzle.Puzzle.Shuffle();
         }
     }
 }

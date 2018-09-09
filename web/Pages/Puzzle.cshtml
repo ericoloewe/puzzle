@@ -5,9 +5,11 @@
 <h1>Puzzle</h1>
 
 <div class="puzzle">
+    @if (WithSolution) 
+    {
     <table>
         <tbody>
-        @foreach (var rows in Columns)
+        @foreach (var rows in Rows)
         {
             <tr>
                 @foreach (var row in rows)
@@ -20,6 +22,12 @@
         }
         </tbody>
     </table>
+    } 
+    else 
+    {
+        <h3>Sem solução para o quebra cabeça</h3> 
+    }
+
     <div class="actions">
         <button class="btn btn-danger" onclick="@Shuffle">
             Embaralhar
@@ -27,32 +35,78 @@
         <button class="btn btn-dark" onclick="@Build">
             Montar
         </button>
+        @if (Builded) 
+        {
+            <button class="btn btn-dark" onclick="@LastStep">
+                Passo anterior
+            </button>
+            <button class="btn btn-dark" onclick="@NextStep">
+                Proximo passo
+            </button>
+        }
     </div>
 </div>
 
 @functions {
-    public PuzzlePiece[][] Columns { get; set; }
+    public bool Builded { get; set; }
+    public bool WithSolution { get; set; }
+    public int CurrentStep { get; set; }
+    public puzzle_logic.Puzzle[] Steps { get; set; }
+    public PuzzlePiece[][] Rows { get; set; }
 
     protected override void OnInit()
     {
-        PuzzleController.own.CreatePuzzle();
-        UpdateColumns();
+        WithSolution = true;
+        UpdateRows(PuzzleController.own.HardCodePuzzle.Puzzle);
     }
 
-    private void Build()
+    private async void Build()
     {
-        PuzzleController.own.BuildPuzzle();
-        UpdateColumns();
+        try 
+        {
+            var puzzleSolutionRevertPath = await PuzzleController.own.BuildPuzzle(p => OnNewState(p));
+
+            Steps = puzzleSolutionRevertPath.Reverse().ToArray();
+            Builded = true;
+            CurrentStep = 0;
+        } 
+        catch(Exception) 
+        {
+            WithSolution = false;
+        }
+
+        UpdateRows(PuzzleController.own.HardCodePuzzle.Puzzle);
+    }
+
+    protected void LastStep() 
+    {
+        if (CurrentStep > 0) {
+            Rows = Steps[--CurrentStep].Rows;
+        }
+    }
+
+    protected void NextStep() 
+    {
+        if (CurrentStep < (Steps.Length - 1)) {
+            Rows = Steps[++CurrentStep].Rows;
+        }
+    }
+
+    private void OnNewState(puzzle_logic.Puzzle puzzle)
+    {
+        // TODO: Show states
     }
 
     private void Shuffle()
     {
+        WithSolution = true;
         PuzzleController.own.ShufflePuzzle();
-        UpdateColumns();
+        UpdateRows(PuzzleController.own.HardCodePuzzle.Puzzle);
     }
 
-    private void UpdateColumns()
+    private void UpdateRows(puzzle_logic.Puzzle puzzle)
     {
-        Columns = PuzzleController.own.CurrentPuzzleColumns;
+        Rows = puzzle.Rows;
+    
     }
 }
