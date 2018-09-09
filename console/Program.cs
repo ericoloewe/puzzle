@@ -31,13 +31,13 @@ namespace console
             });
         }
 
-        static void LogPuzzleFinish(PuzzlePiece[][] rows)
+        static void LogPuzzleFinish(Puzzle puzzle)
         {
             Stopwatch.Stop();
             Console.WriteLine($"Elapsed: {Stopwatch.Elapsed}");
         }
 
-        static void LogPuzzleStart(PuzzlePiece[][] obj)
+        static void LogPuzzleStart(Puzzle puzzle)
         {
             Stopwatch.Start();
             Console.WriteLine("Start build");
@@ -47,21 +47,12 @@ namespace console
 
         static void PrintPuzzle()
         {
-            PrintPuzzle(hardCodePuzzle.Puzzle.Rows);
+            PrintPuzzle(hardCodePuzzle.Puzzle);
         }
 
-        static void PrintPuzzle(PuzzlePiece[][] rows)
+        static void PrintPuzzle(Puzzle puzzle)
         {
-            for (int i = 0; i < rows.Length; i++)
-            {
-                for (int j = 0; j < rows[i].Length; j++)
-                {
-                    Console.Write($"{{i: {i}, j: {j}, piece: {rows[i][j].Number}}} ");
-                }
-
-                Console.Write("\n");
-            }
-
+            Console.WriteLine(puzzle.ToString());
             Console.WriteLine("=========================");
         }
     }

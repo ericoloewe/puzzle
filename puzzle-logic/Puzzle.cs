@@ -231,10 +231,10 @@ namespace puzzle_logic
             {
                 for (int j = 0; j < Rows[i].Length; j++)
                 {
-                    str.Append($"{{i: {i}, j: {j}, piece: {Rows[i][j].Number}}} ");
+                    str.Append($"{Rows[i][j].Number},");
                 }
 
-                str.Append("\n");
+                str.Append(";");
             }
 
             return str.ToString();

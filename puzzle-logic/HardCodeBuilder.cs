@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace puzzle_logic
@@ -28,12 +29,12 @@ namespace puzzle_logic
 
         private void StartToBuildPuzzleTree(PuzzleEvents events)
         {
-            events.onStart.Invoke(Puzzle.Rows);
+            events.onStart.Invoke(Puzzle);
 
             var parent = tree.Insert(Puzzle);
             var puzzle = StartToBuildPuzzleTree(events, parent);
 
-            events.onFinish.Invoke(Puzzle.Rows);
+            events.onFinish.Invoke(Puzzle);
         }
 
         private TreeNode<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events, TreeNode<Puzzle> parent)
@@ -61,7 +62,7 @@ namespace puzzle_logic
                     return puzzleNode;
                 }
 
-                events.onStateChange.Invoke(puzzleChild.Rows);
+                events.onStateChange.Invoke(puzzleChild);
                 var childrenResolution = StartToBuildPuzzleTree(events, puzzleNode);
 
                 if (childrenResolution != null)
@@ -73,6 +74,7 @@ namespace puzzle_logic
             return null;
         }
 
-        private bool IsARepeatedPuzzle(Puzzle puzzle) => puzzleRepeatControl.Keys.Contains(puzzle.ToString());
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private bool IsARepeatedPuzzle(Puzzle puzzle) => puzzleRepeatControl.ContainsKey(puzzle.ToString());
     }
 }
