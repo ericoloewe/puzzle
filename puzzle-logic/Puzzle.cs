@@ -8,11 +8,12 @@ namespace puzzle_logic
     public class Puzzle : ICloneable
     {
         private static string INVALID_MOVEMENT_MESSAGE = "It's not possible to move to a invalid position";
-        public PuzzlePiece[][] Rows { get; private set; }
         public int Size { get; private set; }
-        private PuzzlePiece hidePiece;
-        private Random random = new Random();
+        public PuzzlePiece[][] Rows { get; private set; }
         private IList<int> randomPiecePositions;
+        private PuzzlePiece hidePiece;
+        private PuzzlePiece[][] originalRows;
+        private Random random = new Random();
 
         public Puzzle(int size = 3)
         {
@@ -50,17 +51,12 @@ namespace puzzle_logic
         public bool IsDone()
         {
             var isDone = true;
-            var current = Rows.First().First().Number;
-            var last = Rows.First().First().Number;
 
             for (int i = 0; i < Size; i++)
             {
                 for (int j = 0; j < Size; j++)
                 {
-                    last = current;
-                    current = Rows[i][j].Number;
-
-                    if (last > current && last != current)
+                    if (Rows[i][j].Number != originalRows[i][j].Number)
                     {
                         isDone = false;
                         break;
@@ -120,7 +116,7 @@ namespace puzzle_logic
             nextRows[0][1] = Rows[0][2];
             nextRows[0][2] = Rows[1][2];
             nextRows[1][0] = Rows[0][0];
-            nextRows[1][1] = Rows[1][2];
+            nextRows[1][1] = Rows[0][2];
             nextRows[1][2] = Rows[0][1];
             nextRows[2][0] = Rows[2][0];
             nextRows[2][1] = Rows[2][1];
@@ -157,6 +153,7 @@ namespace puzzle_logic
             }
 
             Rows = rows;
+            originalRows = (PuzzlePiece[][])rows.Clone();
         }
 
         private PiecePosition GetNextPositionByMovement(MovementType movement)
