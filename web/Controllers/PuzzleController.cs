@@ -9,7 +9,7 @@ namespace web.Controllers
     public class PuzzleController
     {
         public Puzzle Current { get; private set; }
-        public PuzzlePiece[][] CurrentPuzzleColumns { get { return Current.Columns; } }
+        public PuzzlePiece[][] CurrentPuzzleColumns { get { return Current.Rows; } }
         public static PuzzleController own = new PuzzleController();
 
         public void BuildPuzzle()

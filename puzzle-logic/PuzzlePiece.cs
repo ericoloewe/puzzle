@@ -6,10 +6,12 @@ namespace puzzle_logic
     {
         public bool IsHide { get; }
         public int Number { get; set; }
+        public PiecePosition Position { get; set; }
 
-        public PuzzlePiece(int number, bool isHide = false)
+        public PuzzlePiece(int number, PiecePosition position, bool isHide = false)
         {
             this.Number = number;
+            this.Position = position;
             this.IsHide = isHide;
         }
     }

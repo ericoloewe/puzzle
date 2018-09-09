@@ -6,7 +6,8 @@ namespace puzzle_logic
 {
     public class Puzzle
     {
-        public PuzzlePiece[][] Columns { get; private set; }
+        private static string INVALID_MOVEMENT_MESSAGE = "It's not possible to move to a invalid position";
+        public PuzzlePiece[][] Rows { get; private set; }
         public int Size { get; private set; }
         private PuzzlePiece hidePiece;
         private Random random = new Random();
@@ -18,18 +19,45 @@ namespace puzzle_logic
             FillColumnsAndRows();
         }
 
+        public IList<MovementType> AllowedMovements()
+        {
+            var allowedMovements = new List<MovementType>();
+
+            if (IsMovementAllowed(MovementType.DOWN))
+            {
+                allowedMovements.Add(MovementType.DOWN);
+            }
+
+            if (IsMovementAllowed(MovementType.LEFT))
+            {
+                allowedMovements.Add(MovementType.LEFT);
+            }
+
+            if (IsMovementAllowed(MovementType.RIGHT))
+            {
+                allowedMovements.Add(MovementType.RIGHT);
+            }
+
+            if (IsMovementAllowed(MovementType.UP))
+            {
+                allowedMovements.Add(MovementType.UP);
+            }
+
+            return allowedMovements;
+        }
+
         public bool IsDone()
         {
             var isDone = true;
-            var current = Columns.First().First().Number;
-            var last = Columns.First().First().Number;
+            var current = Rows.First().First().Number;
+            var last = Rows.First().First().Number;
 
             for (int i = 0; i < Size; i++)
             {
                 for (int j = 0; j < Size; j++)
                 {
                     last = current;
-                    current = Columns[i][j].Number;
+                    current = Rows[i][j].Number;
 
                     if (last > current && last != current)
                     {
@@ -42,117 +70,97 @@ namespace puzzle_logic
             return isDone;
         }
 
+        public void Move(MovementType movement)
+        {
+            var position = hidePiece.Position;
+            var nextPosition = position;
+
+            if (IsMovementAllowed(movement))
+            {
+                throw new InvalidOperationException(INVALID_MOVEMENT_MESSAGE);
+            }
+
+            switch (movement)
+            {
+                case MovementType.DOWN:
+                    nextPosition.Row = nextPosition.Row + 1;
+                    break;
+                case MovementType.LEFT:
+                    nextPosition.Column = nextPosition.Column - 1;
+                    break;
+                case MovementType.RIGHT:
+                    nextPosition.Column = nextPosition.Column + 1;
+                    break;
+                case MovementType.UP:
+                    nextPosition.Row = nextPosition.Row - 1;
+                    break;
+            }
+
+            var pieceToMove = Rows[nextPosition.Row][nextPosition.Column];
+
+            Rows[position.Row][position.Column] = pieceToMove;
+            Rows[nextPosition.Row][nextPosition.Column] = hidePiece;
+            pieceToMove.Position = position;
+            hidePiece.Position = nextPosition;
+        }
+
         public void Shuffle()
         {
-            var currentColumns = Columns.Clone();
-            var nextColumns = new PuzzlePiece[Size][];
+            var currentRows = Rows.Clone();
+            var nextRows = new PuzzlePiece[Size][];
 
             randomPiecePositions = new List<int>();
 
             for (int i = 0; i < Size; i++)
             {
-                nextColumns[i] = new PuzzlePiece[Size];
+                nextRows[i] = new PuzzlePiece[Size];
             }
 
             for (int i = 0; i < Size; i++)
             {
                 for (int j = 0; j < Size; j++)
                 {
-                    var currentPiece = Columns[i][j];
+                    var currentPiece = Rows[i][j];
                     decimal nextPosition = this.GetNextRandomPosition();
                     var nextColumn = (int)Math.Floor(nextPosition % Size);
                     var nextRow = (int)Math.Floor(nextPosition / Size);
 
-                    nextColumns[nextColumn][nextRow] = currentPiece;
+                    nextRows[nextRow][nextColumn] = currentPiece;
+                    currentPiece.Position = new PiecePosition(nextRow, nextColumn);
                 }
             }
 
-            Columns = nextColumns;
-        }
-
-        public void SlideDown()
-        {
-            var position = GetPiecePosition(hidePiece);
-            var nextRow = position.Row + 1;
-
-            if (nextRow > (Size - 1))
-            {
-                throw new InvalidOperationException("It's not possible to move to a invalid position");
-            }
-
-            Columns[position.Column][position.Row] = Columns[nextRow][position.Row];
-            Columns[nextRow][position.Row] = hidePiece;
-        }
-
-        public void SlideLeft()
-        {
-            var position = GetPiecePosition(hidePiece);
-            var nextColumn = position.Column - 1;
-
-            if (nextColumn < 0)
-            {
-                throw new InvalidOperationException("It's not possible to move to a invalid position");
-            }
-
-            Columns[position.Column][position.Row] = Columns[nextColumn][position.Row];
-            Columns[nextColumn][position.Row] = hidePiece;
-        }
-
-        public void SlideRight()
-        {
-            var position = GetPiecePosition(hidePiece);
-            var nextColumn = position.Column + 1;
-
-            if (nextColumn > (Size - 1))
-            {
-                throw new InvalidOperationException("It's not possible to move to a invalid position");
-            }
-
-            Columns[position.Column][position.Row] = Columns[nextColumn][position.Row];
-            Columns[nextColumn][position.Row] = hidePiece;
-        }
-
-        public void SlideUp()
-        {
-            var position = GetPiecePosition(hidePiece);
-            var nextRow = position.Row - 1;
-
-            if (nextRow < 0)
-            {
-                throw new InvalidOperationException("It's not possible to move to a invalid position");
-            }
-
-            Columns[position.Column][position.Row] = Columns[nextRow][position.Row];
-            Columns[nextRow][position.Row] = hidePiece;
+            Rows = nextRows;
         }
 
         private void FillColumnsAndRows()
         {
-            var columns = new PuzzlePiece[Size][];
+            var rows = new PuzzlePiece[Size][];
 
             int currentIndex = 0;
 
             for (int i = 0; i < Size; i++)
             {
-                var row = new PuzzlePiece[Size];
+                var column = new PuzzlePiece[Size];
 
                 for (int j = 0; j < Size; j++)
                 {
+                    var position = new PiecePosition(i, j);
                     var isHide = IsHidePiece(i, j);
-                    var piece = new PuzzlePiece(currentIndex++, isHide);
+                    var piece = new PuzzlePiece(currentIndex++, position, isHide);
 
                     if (isHide)
                     {
                         hidePiece = piece;
                     }
 
-                    row[j] = piece;
+                    column[j] = piece;
                 }
 
-                columns[i] = row;
+                rows[i] = column;
             }
 
-            Columns = columns;
+            Rows = rows;
         }
 
         private int GetNextRandomPosition()
@@ -170,20 +178,32 @@ namespace puzzle_logic
             return nextPosition;
         }
 
-        private PiecePosition GetPiecePosition(PuzzlePiece hidePiece)
-        {
-            throw new NotImplementedException();
-        }
+        private bool IsHidePiece(int i, int j) => i == 0 && j == 0;
 
-        private bool IsHidePiece(int i, int j)
+        private bool IsMovementAllowed(MovementType movement)
         {
-            return i == 0 && j == 0;
-        }
+            var isMovementAllowed = false;
+            var position = hidePiece.Position;
 
-        private class PiecePosition
-        {
-            public int Column { get; set; }
-            public int Row { get; set; }
+            switch (movement)
+            {
+                case MovementType.DOWN:
+                    isMovementAllowed = (position.Row + 1 <= (Size - 1));
+                    break;
+                case MovementType.LEFT:
+                    isMovementAllowed = (position.Column >= 0);
+                    break;
+                case MovementType.RIGHT:
+                    isMovementAllowed = (position.Column + 1 <= (Size - 1));
+                    break;
+                case MovementType.UP:
+                    isMovementAllowed = (position.Row >= 0);
+                    break;
+                default:
+                    throw new InvalidOperationException(INVALID_MOVEMENT_MESSAGE);
+            }
+
+            return isMovementAllowed;
         }
     }
 }
