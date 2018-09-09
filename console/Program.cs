@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using puzzle_logic;
 
 namespace console
@@ -16,7 +17,13 @@ namespace console
             Console.WriteLine("Original puzzle: ");
             PrintPuzzle();
             hardCodePuzzle.Puzzle.Shuffle();
-            hardCodePuzzle.Build(new PuzzleEvents()
+            RunHardCodePuzzleBuild().Wait();
+            Console.WriteLine("Main end");
+        }
+
+        private static async Task RunHardCodePuzzleBuild()
+        {
+            await hardCodePuzzle.Build(new PuzzleEvents()
             {
                 onFinish = LogPuzzleFinish,
                 onStart = LogPuzzleStart,

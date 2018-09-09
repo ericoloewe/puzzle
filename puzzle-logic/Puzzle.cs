@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace puzzle_logic
 {
-    public class Puzzle
+    public class Puzzle : ICloneable
     {
         private static string INVALID_MOVEMENT_MESSAGE = "It's not possible to move to a invalid position";
         public PuzzlePiece[][] Rows { get; private set; }
@@ -73,9 +74,9 @@ namespace puzzle_logic
         public void Move(MovementType movement)
         {
             var position = hidePiece.Position;
-            var nextPosition = position;
+            var nextPosition = (PiecePosition)position.Clone();
 
-            if (IsMovementAllowed(movement))
+            if (!IsMovementAllowed(movement))
             {
                 throw new InvalidOperationException(INVALID_MOVEMENT_MESSAGE);
             }
@@ -191,19 +192,52 @@ namespace puzzle_logic
                     isMovementAllowed = (position.Row + 1 <= (Size - 1));
                     break;
                 case MovementType.LEFT:
-                    isMovementAllowed = (position.Column >= 0);
+                    isMovementAllowed = (position.Column - 1 >= 0);
                     break;
                 case MovementType.RIGHT:
                     isMovementAllowed = (position.Column + 1 <= (Size - 1));
                     break;
                 case MovementType.UP:
-                    isMovementAllowed = (position.Row >= 0);
+                    isMovementAllowed = (position.Row - 1 >= 0);
                     break;
                 default:
                     throw new InvalidOperationException(INVALID_MOVEMENT_MESSAGE);
             }
 
             return isMovementAllowed;
+        }
+
+        public object Clone()
+        {
+            var newPuzzle = (Puzzle)this.MemberwiseClone();
+            var newPuzzleRows = (PuzzlePiece[][])newPuzzle.Rows.Clone();
+
+            for (int i = 0; i < Size; i++)
+            {
+                newPuzzleRows[i] = (PuzzlePiece[])newPuzzle.Rows[i].Clone();
+            }
+
+            newPuzzle.Rows = newPuzzleRows;
+            newPuzzle.hidePiece = (PuzzlePiece)newPuzzle.hidePiece.Clone();
+
+            return newPuzzle;
+        }
+
+        public override string ToString()
+        {
+            var str = new StringBuilder();
+
+            for (int i = 0; i < Rows.Length; i++)
+            {
+                for (int j = 0; j < Rows[i].Length; j++)
+                {
+                    str.Append($"{{i: {i}, j: {j}, piece: {Rows[i][j].Number}}} ");
+                }
+
+                str.Append("\n");
+            }
+
+            return str.ToString();
         }
     }
 }

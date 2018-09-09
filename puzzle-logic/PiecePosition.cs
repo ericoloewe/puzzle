@@ -1,6 +1,8 @@
+using System;
+
 namespace puzzle_logic
 {
-    public class PiecePosition
+    public class PiecePosition : ICloneable
     {
         public int Column { get; set; }
         public int Row { get; set; }
@@ -9,6 +11,11 @@ namespace puzzle_logic
         {
             this.Row = row;
             this.Column = column;
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 }
