@@ -10,22 +10,44 @@ namespace console
     {
         static Stopwatch Stopwatch = new Stopwatch();
         static IPuzzleBuilder hardCodePuzzle = new HardCodeBuilder();
+        static IPuzzleBuilder puzzleBuilder = new PuzzleBuilder();
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Main start");
             Stopwatch.Start();
             Console.WriteLine("Original puzzle: ");
             PrintPuzzle();
-            hardCodePuzzle.Puzzle.Shuffle();
-            RunHardCodePuzzleBuild().Wait();
+            RunPuzzleBuild().Wait();
             Console.WriteLine("Main end");
         }
 
+        #region hard-code
         private static async Task RunHardCodePuzzleBuild()
         {
+            hardCodePuzzle.Puzzle.Shuffle();
             LogPuzzleStart(hardCodePuzzle.Puzzle);
 
             var puzzleSolutionRevertPath = await hardCodePuzzle.Build(new PuzzleEvents()
+            {
+                onStateChange = PrintPuzzle
+            });
+
+            LogPuzzleFinish();
+
+            foreach (var puzzle in puzzleSolutionRevertPath.Reverse())
+            {
+                PrintPuzzle(puzzle);
+            }
+        }
+        #endregion
+
+        private static async Task RunPuzzleBuild()
+        {
+            puzzleBuilder.Puzzle.Shuffle();
+            LogPuzzleStart(puzzleBuilder.Puzzle);
+
+            var puzzleSolutionRevertPath = await puzzleBuilder.Build(new PuzzleEvents()
             {
                 onStateChange = PrintPuzzle
             });
