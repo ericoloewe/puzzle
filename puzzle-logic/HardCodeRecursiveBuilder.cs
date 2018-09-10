@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace puzzle_logic
 {
-    public class HardCodeBuilder : IPuzzleBuilder
+    public class HardCodeRecursiveBuilder : IPuzzleBuilder
     {
         public Puzzle Puzzle { get; private set; }
         private Task<IList<Puzzle>> buildTask;
         private Tree<Puzzle> tree;
         private IDictionary<string, Puzzle> puzzleRepeatControl;
 
-        public HardCodeBuilder()
+        public HardCodeRecursiveBuilder()
         {
             Puzzle = new Puzzle();
         }
@@ -44,66 +44,42 @@ namespace puzzle_logic
 
         private TreeNode<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events, TreeNode<Puzzle> parent)
         {
-            TreeNode<Puzzle> nodeSolution = null;
-            var hasMoreItems = true;
-            var foundSolution = false;
-            var openedParents = new Dictionary<string, TreeNode<Puzzle>>();
-            var closedParents = new Dictionary<string, TreeNode<Puzzle>>();
             var parentPuzzle = parent.Data;
 
-            if (parentPuzzle.IsDone())
+            if (IsARepeatedPuzzle(parentPuzzle))
             {
-                foundSolution = true;
-                return parent;
+                return null;
             }
 
-            openedParents.Add(parentPuzzle.ToString(), parent);
+            AddToPuzzleRepeatedListIfNeed(parentPuzzle);
 
-            while (hasMoreItems && !foundSolution)
+            foreach (var allowedMovement in parentPuzzle.AllowedMovements())
             {
-                foreach (var allowedMovement in parentPuzzle.AllowedMovements())
+                var puzzleChild = (Puzzle)parentPuzzle.Clone();
+
+                Console.WriteLine($"allowedMovement: {allowedMovement}");
+                puzzleChild.Move(allowedMovement);
+
+                if (!IsARepeatedPuzzle(puzzleChild))
                 {
-                    var puzzleChild = (Puzzle)parentPuzzle.Clone();
+                    var puzzleChildNode = tree.Insert(puzzleChild, parent);
 
-                    puzzleChild.Move(allowedMovement);
-
-                    if (!IsARepeatedPuzzle(puzzleChild))
+                    if (puzzleChild.IsDone())
                     {
-                        var puzzleChildNode = tree.Insert(puzzleChild, parent);
+                        return puzzleChildNode;
+                    }
 
-                        if (puzzleChild.IsDone())
-                        {
-                            foundSolution = true;
-                            return puzzleChildNode;
-                        }
+                    events.onStateChange.Invoke(puzzleChild);
+                    var childrenResolution = StartToBuildPuzzleTree(events, puzzleChildNode);
 
-                        events.onStateChange.Invoke(puzzleChild);
-                        openedParents.Add(puzzleChild.ToString(), puzzleChildNode);
-                        AddToPuzzleRepeatedListIfNeed(puzzleChild);
+                    if (childrenResolution != null)
+                    {
+                        return childrenResolution;
                     }
                 }
-
-                var parentPuzzleString = parentPuzzle.ToString();
-
-                openedParents.Remove(parentPuzzleString);
-
-                if (!closedParents.ContainsKey(parentPuzzleString))
-                {
-                    closedParents.Add(parentPuzzleString, parent);
-                }
-
-                if (openedParents.Count == 0)
-                {
-                    hasMoreItems = false;
-                    break;
-                }
-
-                AddToPuzzleRepeatedListIfNeed(parentPuzzle);
-                parent = openedParents.First().Value;
-                parentPuzzle = parent.Data;
             }
 
-            return nodeSolution;
+            return null;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
