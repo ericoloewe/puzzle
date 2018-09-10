@@ -9,7 +9,7 @@ namespace console
     class Program
     {
         static Stopwatch Stopwatch = new Stopwatch();
-        static HardCodeBuilder hardCodePuzzle = new HardCodeBuilder();
+        static IPuzzleBuilder hardCodePuzzle = new HardCodeBuilder();
 
         static void Main(string[] args)
         {

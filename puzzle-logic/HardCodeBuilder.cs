@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace puzzle_logic
 {
-    public class HardCodeBuilder
+    public class HardCodeBuilder : IPuzzleBuilder
     {
         public Puzzle Puzzle { get; private set; }
         private Task<IList<Puzzle>> buildTask;
