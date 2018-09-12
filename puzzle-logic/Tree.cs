@@ -58,6 +58,7 @@ namespace puzzle_logic
         {
             var newNode = new PuzzleTreeNode<IPuzzle>(data);
 
+            AddInfoTo(newNode);
             newNode.Parent = parent;
             parent.Children.Add(newNode);
 
@@ -79,6 +80,8 @@ namespace puzzle_logic
 
         private void AddInfoTo(PuzzleTreeNode<IPuzzle> node)
         {
+            node.AmountOfPiecesOutOfOrder = node.Data.AmountOfPiecesOutOfOrder();
+            node.MovementsToFinish = node.Data.MovementsToFinishAllPieces();
         }
     }
     #endregion
@@ -86,8 +89,11 @@ namespace puzzle_logic
     public class PuzzleTreeNode<T>
     {
         public IList<PuzzleTreeNode<T>> Children { get; set; }
-        public T Data { get; set; }
+        public int HeuristicValue { get { return AmountOfPiecesOutOfOrder + MovementsToFinish; } }
+        public int AmountOfPiecesOutOfOrder { get; set; }
+        public int MovementsToFinish { get; set; }
         public PuzzleTreeNode<T> Parent { get; set; }
+        public T Data { get; set; }
 
         public PuzzleTreeNode(T data)
         {

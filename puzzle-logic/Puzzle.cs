@@ -13,6 +13,7 @@ namespace puzzle_logic
         private IList<int> randomPiecePositions;
         private PuzzlePiece hidePiece;
         private PuzzlePiece[][] originalRows;
+        private PuzzlePiece[] originalRowsByIndex;
         private Random random = new Random();
 
         public Puzzle(int size = 3)
@@ -46,6 +47,42 @@ namespace puzzle_logic
             }
 
             return allowedMovements;
+        }
+
+        public int AmountOfPiecesOutOfOrder()
+        {
+            var amountOfPiecesOutOfOrder = 0;
+
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    if (Rows[i][j].Number != originalRows[i][j].Number)
+                    {
+                        amountOfPiecesOutOfOrder++;
+                    }
+                }
+            }
+
+            return amountOfPiecesOutOfOrder;
+        }
+
+        public int MovementsToFinishAllPieces()
+        {
+            var movementsToFinishAllPieces = 0;
+
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    if (Rows[i][j].Number != originalRows[i][j].Number)
+                    {
+                        movementsToFinishAllPieces += MovementsToFinish(Rows[i][j]);
+                    }
+                }
+            }
+
+            return movementsToFinishAllPieces;
         }
 
         public bool IsDone()
@@ -136,6 +173,7 @@ namespace puzzle_logic
                     }
 
                     column[j] = piece;
+                    originalRowsByIndex[piece.Number] = piece;
                 }
 
                 rows[i] = column;
@@ -201,6 +239,16 @@ namespace puzzle_logic
                 && position.Column < Size
                 && position.Row >= 0
             );
+        }
+        public int MovementsToFinish(PuzzlePiece piece)
+        {
+            var originalPiece = originalRowsByIndex[piece.Number];
+            var movementToFinish = Math.Abs(
+                (originalPiece.Position.Column - piece.Position.Column) +
+                (originalPiece.Position.Row - piece.Position.Row)
+            );
+
+            return movementToFinish;
         }
 
         public object Clone()

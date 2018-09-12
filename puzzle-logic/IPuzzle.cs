@@ -5,9 +5,11 @@ namespace puzzle_logic
 {
     public interface IPuzzle : ICloneable
     {
-        PuzzlePiece[][] Rows { get; }
-        IList<MovementType> AllowedMovements();
         bool IsDone();
+        IList<MovementType> AllowedMovements();
+        int AmountOfPiecesOutOfOrder();
+        int MovementsToFinishAllPieces();
+        PuzzlePiece[][] Rows { get; }
         void Move(MovementType movement);
         void Shuffle();
     }
