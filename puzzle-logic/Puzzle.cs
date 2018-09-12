@@ -5,7 +5,7 @@ using System.Text;
 
 namespace puzzle_logic
 {
-    public class Puzzle : ICloneable
+    public class Puzzle : IPuzzle
     {
         private static string INVALID_MOVEMENT_MESSAGE = "It's not possible to move to a invalid position";
         public int Size { get; private set; }

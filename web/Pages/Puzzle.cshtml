@@ -51,7 +51,7 @@
     public bool Builded { get; set; }
     public bool WithSolution { get; set; }
     public int CurrentStep { get; set; }
-    public puzzle_logic.Puzzle[] Steps { get; set; }
+    public puzzle_logic.IPuzzle[] Steps { get; set; }
     public PuzzlePiece[][] Rows { get; set; }
 
     protected override void OnInit()
@@ -92,7 +92,7 @@
         }
     }
 
-    private void OnNewState(puzzle_logic.Puzzle puzzle)
+    private void OnNewState(puzzle_logic.IPuzzle puzzle)
     {
         // TODO: Show states
     }
@@ -104,7 +104,7 @@
         UpdateRows(PuzzleController.own.HardCodePuzzle.Puzzle);
     }
 
-    private void UpdateRows(puzzle_logic.Puzzle puzzle)
+    private void UpdateRows(puzzle_logic.IPuzzle puzzle)
     {
         Rows = puzzle.Rows;
     

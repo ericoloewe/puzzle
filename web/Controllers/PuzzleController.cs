@@ -20,7 +20,7 @@ namespace web.Controllers
             Stopwatch = new Stopwatch();
         }
 
-        public async Task<IList<Puzzle>> BuildPuzzle(Action<Puzzle> onChange)
+        public async Task<IList<IPuzzle>> BuildPuzzle(Action<IPuzzle> onChange)
         {
             return await HardCodePuzzle.Build(new PuzzleEvents()
             {

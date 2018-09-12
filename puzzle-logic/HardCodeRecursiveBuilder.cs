@@ -8,28 +8,28 @@ namespace puzzle_logic
 {
     public class HardCodeRecursiveBuilder : IPuzzleBuilder
     {
-        public Puzzle Puzzle { get; private set; }
-        private Task<IList<Puzzle>> buildTask;
-        private PuzzleTree<Puzzle> tree;
-        private IDictionary<string, Puzzle> puzzleRepeatControl;
+        public IPuzzle Puzzle { get; private set; }
+        private Task<IList<IPuzzle>> buildTask;
+        private PuzzleTreeWithoutInfo<IPuzzle> tree;
+        private IDictionary<string, IPuzzle> puzzleRepeatControl;
 
         public HardCodeRecursiveBuilder()
         {
             Puzzle = new Puzzle();
         }
 
-        public async Task<IList<Puzzle>> Build(PuzzleEvents events)
+        public async Task<IList<IPuzzle>> Build(PuzzleEvents events)
         {
-            tree = new PuzzleTree<Puzzle>();
-            puzzleRepeatControl = new Dictionary<string, Puzzle>();
-            buildTask = new Task<IList<Puzzle>>(() => StartToBuildPuzzleTree(events));
+            tree = new PuzzleTreeWithoutInfo<IPuzzle>();
+            puzzleRepeatControl = new Dictionary<string, IPuzzle>();
+            buildTask = new Task<IList<IPuzzle>>(() => StartToBuildPuzzleTree(events));
             buildTask.Start();
             buildTask.Wait();
 
             return buildTask.Result;
         }
 
-        private IList<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events)
+        private IList<IPuzzle> StartToBuildPuzzleTree(PuzzleEvents events)
         {
             var parent = tree.Insert(Puzzle);
             var puzzleNode = StartToBuildPuzzleTree(events, parent);
@@ -42,7 +42,7 @@ namespace puzzle_logic
             return tree.GetNodePathToRoot(puzzleNode);
         }
 
-        private PuzzleTreeNode<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<Puzzle> parent)
+        private PuzzleTreeNode<IPuzzle> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<IPuzzle> parent)
         {
             var parentPuzzle = parent.Data;
 
@@ -83,7 +83,7 @@ namespace puzzle_logic
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        private void AddToPuzzleRepeatedListIfNeed(Puzzle puzzle)
+        private void AddToPuzzleRepeatedListIfNeed(IPuzzle puzzle)
         {
             var puzzleString = puzzle.ToString();
 
@@ -94,6 +94,6 @@ namespace puzzle_logic
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        private bool IsARepeatedPuzzle(Puzzle puzzle) => puzzleRepeatControl.ContainsKey(puzzle.ToString());
+        private bool IsARepeatedPuzzle(IPuzzle puzzle) => puzzleRepeatControl.ContainsKey(puzzle.ToString());
     }
 }

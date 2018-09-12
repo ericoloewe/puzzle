@@ -5,7 +5,7 @@ namespace puzzle_logic
 {
     public interface IPuzzleBuilder
     {
-        Puzzle Puzzle { get; }
-        Task<IList<Puzzle>> Build(PuzzleEvents events);
+        IPuzzle Puzzle { get; }
+        Task<IList<IPuzzle>> Build(PuzzleEvents events);
     }
 }

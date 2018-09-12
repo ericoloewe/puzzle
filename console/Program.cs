@@ -66,7 +66,7 @@ namespace console
             Console.WriteLine($"Elapsed: {Stopwatch.Elapsed}");
         }
 
-        static void LogPuzzleStart(Puzzle puzzle)
+        static void LogPuzzleStart(IPuzzle puzzle)
         {
             Stopwatch.Start();
             Console.WriteLine("Start build");
@@ -77,7 +77,7 @@ namespace console
             PrintPuzzle(hardCodePuzzle.Puzzle);
         }
 
-        static void PrintPuzzle(Puzzle puzzle)
+        static void PrintPuzzle(IPuzzle puzzle)
         {
             Console.WriteLine(puzzle.ToString());
             Console.WriteLine("=========================");

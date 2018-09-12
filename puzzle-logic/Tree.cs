@@ -5,7 +5,8 @@ using System.Threading;
 
 namespace puzzle_logic
 {
-    public class PuzzleTree<T>
+    #region puzzle-tree-without-info
+    public class PuzzleTreeWithoutInfo<T>
     {
         public PuzzleTreeNode<T> Root { get; set; }
 
@@ -24,9 +25,9 @@ namespace puzzle_logic
             return newNode;
         }
 
-        public IList<Puzzle> GetNodePathToRoot(PuzzleTreeNode<Puzzle> puzzleNode)
+        public IList<T> GetNodePathToRoot(PuzzleTreeNode<T> puzzleNode)
         {
-            IList<Puzzle> pathToRoot = new List<Puzzle>();
+            IList<T> pathToRoot = new List<T>();
 
             do
             {
@@ -37,6 +38,50 @@ namespace puzzle_logic
             return pathToRoot;
         }
     }
+    #endregion
+
+    #region puzzle-tree-with-info
+    public class PuzzleTreeWithInfo
+    {
+        public PuzzleTreeNode<IPuzzle> Root { get; private set; }
+
+        public PuzzleTreeNode<IPuzzle> Insert(IPuzzle data)
+        {
+            Root = new PuzzleTreeNode<IPuzzle>(data);
+
+            AddInfoTo(Root);
+
+            return Root;
+        }
+
+        public PuzzleTreeNode<IPuzzle> Insert(IPuzzle data, PuzzleTreeNode<IPuzzle> parent)
+        {
+            var newNode = new PuzzleTreeNode<IPuzzle>(data);
+
+            newNode.Parent = parent;
+            parent.Children.Add(newNode);
+
+            return newNode;
+        }
+
+        public IList<IPuzzle> GetNodePathToRoot(PuzzleTreeNode<IPuzzle> puzzleNode)
+        {
+            IList<IPuzzle> pathToRoot = new List<IPuzzle>();
+
+            do
+            {
+                pathToRoot.Add(puzzleNode.Data);
+                puzzleNode = puzzleNode.Parent;
+            } while (puzzleNode != null);
+
+            return pathToRoot;
+        }
+
+        private void AddInfoTo(PuzzleTreeNode<IPuzzle> node)
+        {
+        }
+    }
+    #endregion
 
     public class PuzzleTreeNode<T>
     {
