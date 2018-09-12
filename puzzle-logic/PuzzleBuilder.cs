@@ -10,7 +10,7 @@ namespace puzzle_logic
     {
         public Puzzle Puzzle { get; private set; }
         private Task<IList<Puzzle>> buildTask;
-        private Tree<Puzzle> tree;
+        private PuzzleTree<Puzzle> tree;
         private IDictionary<string, Puzzle> puzzleRepeatControl;
 
         public PuzzleBuilder()
@@ -20,7 +20,7 @@ namespace puzzle_logic
 
         public async Task<IList<Puzzle>> Build(PuzzleEvents events)
         {
-            tree = new Tree<Puzzle>();
+            tree = new PuzzleTree<Puzzle>();
             puzzleRepeatControl = new Dictionary<string, Puzzle>();
             buildTask = new Task<IList<Puzzle>>(() => StartToBuildPuzzleTree(events));
             buildTask.Start();
@@ -42,13 +42,13 @@ namespace puzzle_logic
             return tree.GetNodePathToRoot(puzzleNode);
         }
 
-        private TreeNode<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events, TreeNode<Puzzle> parent)
+        private PuzzleTreeNode<Puzzle> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<Puzzle> parent)
         {
-            TreeNode<Puzzle> nodeSolution = null;
+            PuzzleTreeNode<Puzzle> nodeSolution = null;
             var hasMoreItems = true;
             var foundSolution = false;
-            var openedParents = new Dictionary<string, TreeNode<Puzzle>>();
-            var closedParents = new Dictionary<string, TreeNode<Puzzle>>();
+            var openedParents = new Dictionary<string, PuzzleTreeNode<Puzzle>>();
+            var closedParents = new Dictionary<string, PuzzleTreeNode<Puzzle>>();
             var parentPuzzle = parent.Data;
 
             if (parentPuzzle.IsDone())

@@ -5,18 +5,18 @@ using System.Threading;
 
 namespace puzzle_logic
 {
-    public class Tree<T>
+    public class PuzzleTree<T>
     {
-        public TreeNode<T> Root { get; set; }
+        public PuzzleTreeNode<T> Root { get; set; }
 
-        public TreeNode<T> Insert(T data)
+        public PuzzleTreeNode<T> Insert(T data)
         {
-            return Root = new TreeNode<T>(data);
+            return Root = new PuzzleTreeNode<T>(data);
         }
 
-        public TreeNode<T> Insert(T data, TreeNode<T> parent)
+        public PuzzleTreeNode<T> Insert(T data, PuzzleTreeNode<T> parent)
         {
-            var newNode = new TreeNode<T>(data);
+            var newNode = new PuzzleTreeNode<T>(data);
 
             newNode.Parent = parent;
             parent.Children.Add(newNode);
@@ -24,7 +24,7 @@ namespace puzzle_logic
             return newNode;
         }
 
-        public IList<Puzzle> GetNodePathToRoot(TreeNode<Puzzle> puzzleNode)
+        public IList<Puzzle> GetNodePathToRoot(PuzzleTreeNode<Puzzle> puzzleNode)
         {
             IList<Puzzle> pathToRoot = new List<Puzzle>();
 
@@ -38,16 +38,16 @@ namespace puzzle_logic
         }
     }
 
-    public class TreeNode<T>
+    public class PuzzleTreeNode<T>
     {
-        public IList<TreeNode<T>> Children { get; set; }
+        public IList<PuzzleTreeNode<T>> Children { get; set; }
         public T Data { get; set; }
-        public TreeNode<T> Parent { get; set; }
+        public PuzzleTreeNode<T> Parent { get; set; }
 
-        public TreeNode(T data)
+        public PuzzleTreeNode(T data)
         {
             this.Data = data;
-            this.Children = new List<TreeNode<T>>();
+            this.Children = new List<PuzzleTreeNode<T>>();
         }
     }
 }
