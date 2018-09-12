@@ -32,8 +32,7 @@ namespace console
 
             var puzzleSolutionRevertPath = await hardCodePuzzle.Build(new PuzzleEvents()
             {
-                onStateChange = PrintPuzzle,
-                onFinishBuild = PrintPuzzleTrees
+                onStateChange = PrintPuzzle
             });
 
             LogPuzzleFinish();
