@@ -154,8 +154,9 @@ namespace puzzle_logic
         private void FillColumnsAndRows()
         {
             var rows = new PuzzlePiece[Size][];
-
             int currentIndex = 0;
+
+            originalRowsByIndex = new PuzzlePiece[Size * Size];
 
             for (int i = 0; i < Size; i++)
             {

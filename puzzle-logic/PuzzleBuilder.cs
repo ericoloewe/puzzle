@@ -11,7 +11,6 @@ namespace puzzle_logic
         public IPuzzle Puzzle { get; private set; }
         private Task<IList<IPuzzle>> buildTask;
         private PuzzleTreeWithInfo tree;
-        private IDictionary<string, IPuzzle> puzzleRepeatControl;
 
         public PuzzleBuilder()
         {
@@ -21,7 +20,6 @@ namespace puzzle_logic
         public async Task<IList<IPuzzle>> Build(PuzzleEvents events)
         {
             tree = new PuzzleTreeWithInfo();
-            puzzleRepeatControl = new Dictionary<string, IPuzzle>();
             buildTask = new Task<IList<IPuzzle>>(() => StartToBuildPuzzleTree(events));
             buildTask.Start();
             buildTask.Wait();
@@ -32,34 +30,45 @@ namespace puzzle_logic
         private IList<IPuzzle> StartToBuildPuzzleTree(PuzzleEvents events)
         {
             var parent = tree.Insert(Puzzle);
-            var puzzleNode = StartToBuildPuzzleTree(events, parent);
+            var puzzleNodes = StartToBuildPuzzleTree(events, parent);
 
-            if (puzzleNode == null)
+            if (!puzzleNodes?.Any() ?? false)
             {
                 throw new Exception("There isn't a solution for this puzzle");
             }
 
-            return tree.GetNodePathToRoot(puzzleNode);
+            var bestPuzzleTree = tree.GetNodePathToRoot(puzzleNodes.FirstOrDefault());
+
+            foreach (var node in puzzleNodes)
+            {
+                var nodeTree = tree.GetNodePathToRoot(node);
+
+                if (bestPuzzleTree.Count > nodeTree.Count)
+                {
+                    bestPuzzleTree = nodeTree;
+                }
+            }
+
+            return bestPuzzleTree;
         }
 
-        private PuzzleTreeNode<IPuzzle> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<IPuzzle> parent)
+        private IList<PuzzleTreeNode<IPuzzle>> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<IPuzzle> parent)
         {
-            PuzzleTreeNode<IPuzzle> nodeSolution = null;
             var hasMoreItems = true;
-            var foundSolution = false;
             var openedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
-            var closedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
+            var puzzleRepeatControl = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
+            var solutions = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var parentPuzzle = parent.Data;
+            var parentPuzzleString = parentPuzzle.ToString();
 
             if (parentPuzzle.IsDone())
             {
-                foundSolution = true;
-                return parent;
+                solutions[parentPuzzleString] = parent;
             }
 
-            openedParents.Add(parentPuzzle.ToString(), parent);
+            openedParents[parentPuzzleString] = parent;
 
-            while (hasMoreItems && !foundSolution)
+            while (hasMoreItems)
             {
                 foreach (var allowedMovement in parentPuzzle.AllowedMovements())
                 {
@@ -67,57 +76,39 @@ namespace puzzle_logic
 
                     puzzleChild.Move(allowedMovement);
 
-                    if (!IsARepeatedPuzzle(puzzleChild))
+                    var puzzleChildString = puzzleChild.ToString();
+                    var isARepeatedPuzzle = puzzleRepeatControl.ContainsKey(puzzleChildString);
+
+                    if (!isARepeatedPuzzle)
                     {
                         var puzzleChildNode = tree.Insert(puzzleChild, parent);
 
                         if (puzzleChild.IsDone())
                         {
-                            foundSolution = true;
-                            return puzzleChildNode;
+                            solutions[puzzleChildString] = puzzleChildNode;
                         }
 
                         events.onStateChange.Invoke(puzzleChild);
-                        openedParents.Add(puzzleChild.ToString(), puzzleChildNode);
-                        AddToPuzzleRepeatedListIfNeed(puzzleChild);
+                        openedParents[puzzleChildString] = puzzleChildNode;
+                        puzzleRepeatControl[puzzleChildString] = puzzleChildNode;
                     }
                 }
 
-                var parentPuzzleString = parentPuzzle.ToString();
-
                 openedParents.Remove(parentPuzzleString);
 
-                if (!closedParents.ContainsKey(parentPuzzleString))
-                {
-                    closedParents.Add(parentPuzzleString, parent);
-                }
-
-                if (openedParents.Count == 0)
+                if (!openedParents.Any())
                 {
                     hasMoreItems = false;
                     break;
                 }
 
-                AddToPuzzleRepeatedListIfNeed(parentPuzzle);
+                puzzleRepeatControl[parentPuzzleString] = parent;
                 parent = openedParents.First().Value;
                 parentPuzzle = parent.Data;
+                parentPuzzleString = parentPuzzle.ToString();
             }
 
-            return nodeSolution;
+            return solutions.Values.ToList();
         }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        private void AddToPuzzleRepeatedListIfNeed(IPuzzle puzzle)
-        {
-            var puzzleString = puzzle.ToString();
-
-            if (!puzzleRepeatControl.ContainsKey(puzzleString))
-            {
-                puzzleRepeatControl.Add(puzzleString, puzzle);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        private bool IsARepeatedPuzzle(Puzzle puzzle) => puzzleRepeatControl.ContainsKey(puzzle.ToString());
     }
 }
