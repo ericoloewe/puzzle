@@ -27,51 +27,47 @@ namespace puzzle_logic
             return buildTask.Result;
         }
 
+        private PuzzleTreeNode<IPuzzle> GetBestNodeByHeuristic(Dictionary<string, PuzzleTreeNode<IPuzzle>> puzzles)
+        {
+            var min = puzzles.Values.Min(p => p.HeuristicValue);
+
+            return puzzles.Values.FirstOrDefault(p => p.HeuristicValue.Equals(min));
+        }
+
         private IList<IPuzzle> StartToBuildPuzzleTree(PuzzleEvents events)
         {
             var parent = tree.Insert(Puzzle);
-            var puzzleNodes = StartToBuildPuzzleTree(events, parent);
+            var puzzleNode = StartToBuildPuzzleTree(events, parent);
 
-            if (!puzzleNodes?.Any() ?? false)
+            if (puzzleNode == null)
             {
                 throw new ArgumentException("There isn't a solution for this puzzle");
             }
 
-            var bestPuzzleTree = tree.GetNodePathToRoot(puzzleNodes.FirstOrDefault());
-
-            foreach (var node in puzzleNodes)
-            {
-                var nodeTree = tree.GetNodePathToRoot(node);
-
-                // Console.WriteLine($"nodeTree.Count: {nodeTree.Count}");
-
-                if (bestPuzzleTree.Count > nodeTree.Count)
-                {
-                    bestPuzzleTree = nodeTree;
-                }
-            }
-
-            return bestPuzzleTree;
+            return tree.GetNodePathToRoot(puzzleNode);
         }
 
-        private IList<PuzzleTreeNode<IPuzzle>> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<IPuzzle> parent)
+        private PuzzleTreeNode<IPuzzle> StartToBuildPuzzleTree(PuzzleEvents events, PuzzleTreeNode<IPuzzle> parent)
         {
+            PuzzleTreeNode<IPuzzle> solution = null;
             var hasMoreItems = true;
+            var foundSolution = false;
             var openedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var closedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var childRepeatControl = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
-            var solutions = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var parentPuzzle = parent.Data;
             var parentPuzzleString = parentPuzzle.ToString();
 
             if (parentPuzzle.IsDone())
             {
-                solutions[parentPuzzleString] = parent;
+                solution = parent;
+
+                return solution;
             }
 
             openedParents[parentPuzzleString] = parent;
 
-            while (hasMoreItems)
+            while (hasMoreItems && !foundSolution)
             {
                 foreach (var allowedMovement in parentPuzzle.AllowedMovements())
                 {
@@ -97,7 +93,10 @@ namespace puzzle_logic
                         {
                             if (puzzleChild.IsDone())
                             {
-                                solutions[puzzleChildString] = puzzleChildNode;
+                                solution = puzzleChildNode;
+                                foundSolution = true;
+
+                                return puzzleChildNode;
                             }
 
                             events.onStateChange.Invoke(puzzleChild);
@@ -116,12 +115,12 @@ namespace puzzle_logic
                 }
 
                 childRepeatControl[parentPuzzleString] = parent;
-                parent = openedParents.First().Value;
+                parent = GetBestNodeByHeuristic(openedParents);
                 parentPuzzle = parent.Data;
                 parentPuzzleString = parentPuzzle.ToString();
             }
 
-            return solutions.Values.ToList();
+            return solution;
         }
     }
 }
