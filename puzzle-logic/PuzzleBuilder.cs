@@ -34,7 +34,7 @@ namespace puzzle_logic
 
             if (!puzzleNodes?.Any() ?? false)
             {
-                throw new Exception("There isn't a solution for this puzzle");
+                throw new ArgumentException("There isn't a solution for this puzzle");
             }
 
             var bestPuzzleTree = tree.GetNodePathToRoot(puzzleNodes.FirstOrDefault());
@@ -59,7 +59,7 @@ namespace puzzle_logic
             var hasMoreItems = true;
             var openedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var closedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
-            var puzzleChildRepeatControl = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
+            var childRepeatControl = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var solutions = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var parentPuzzle = parent.Data;
             var parentPuzzleString = parentPuzzle.ToString();
@@ -80,10 +80,11 @@ namespace puzzle_logic
                     puzzleChild.Move(allowedMovement);
 
                     var puzzleChildString = puzzleChild.ToString();
-                    var isARepeatedPuzzle = puzzleChildRepeatControl.ContainsKey(puzzleChildString);
+                    var isARepeatedPuzzle = childRepeatControl.ContainsKey(puzzleChildString);
                     var childWasAParent = closedParents.ContainsKey(puzzleChildString);
+                    var childWillBeAParent = openedParents.ContainsKey(puzzleChildString);
 
-                    if (!childWasAParent || !isARepeatedPuzzle)
+                    if (!childWasAParent || !childWillBeAParent || !isARepeatedPuzzle)
                     {
                         var puzzleChildNode = tree.Insert(puzzleChild, parent);
 
@@ -100,7 +101,7 @@ namespace puzzle_logic
                             }
 
                             events.onStateChange.Invoke(puzzleChild);
-                            puzzleChildRepeatControl[puzzleChildString] = puzzleChildNode;
+                            childRepeatControl[puzzleChildString] = puzzleChildNode;
                         }
                     }
                 }
@@ -114,7 +115,7 @@ namespace puzzle_logic
                     break;
                 }
 
-                puzzleChildRepeatControl[parentPuzzleString] = parent;
+                childRepeatControl[parentPuzzleString] = parent;
                 parent = openedParents.First().Value;
                 parentPuzzle = parent.Data;
                 parentPuzzleString = parentPuzzle.ToString();

@@ -46,13 +46,22 @@ namespace console
 
         private static async Task RunPuzzleBuild()
         {
+            IList<IPuzzle> puzzleSolutionRevertPath = new List<IPuzzle>();
+
             puzzleBuilder.Puzzle.Shuffle();
             LogPuzzleStart(puzzleBuilder.Puzzle);
 
-            var puzzleSolutionRevertPath = await puzzleBuilder.Build(new PuzzleEvents()
+            try
             {
-                onStateChange = PrintPuzzle
-            });
+                puzzleSolutionRevertPath = await puzzleBuilder.Build(new PuzzleEvents()
+                {
+                    onStateChange = PrintPuzzle
+                });
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Não foi encontrado nenhuma solução para o quebra cabeça");
+            }
 
             LogPuzzleFinish();
 
