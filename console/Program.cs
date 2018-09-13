@@ -22,6 +22,8 @@ namespace console
             PrintPuzzle();
             RunPuzzleBuild().Wait();
             Console.WriteLine("Main end");
+            Console.WriteLine("Press any key to finish...");
+            Console.ReadKey();
         }
 
         #region hard-code
@@ -57,6 +59,8 @@ namespace console
                 {
                     onStateChange = PrintPuzzle
                 });
+
+                Console.WriteLine("Solução encontrada!");
             }
             catch (ArgumentException)
             {
@@ -64,6 +68,7 @@ namespace console
             }
 
             LogPuzzleFinish();
+            Console.WriteLine("Imprimindo solução abaixo!");
 
             foreach (var puzzle in puzzleSolutionRevertPath.Reverse())
             {
