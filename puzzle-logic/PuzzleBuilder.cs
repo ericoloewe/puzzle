@@ -43,6 +43,8 @@ namespace puzzle_logic
             {
                 var nodeTree = tree.GetNodePathToRoot(node);
 
+                // Console.WriteLine($"nodeTree.Count: {nodeTree.Count}");
+
                 if (bestPuzzleTree.Count > nodeTree.Count)
                 {
                     bestPuzzleTree = nodeTree;
@@ -56,7 +58,8 @@ namespace puzzle_logic
         {
             var hasMoreItems = true;
             var openedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
-            var puzzleRepeatControl = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
+            var closedParents = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
+            var puzzleChildRepeatControl = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var solutions = new Dictionary<string, PuzzleTreeNode<IPuzzle>>();
             var parentPuzzle = parent.Data;
             var parentPuzzleString = parentPuzzle.ToString();
@@ -77,24 +80,33 @@ namespace puzzle_logic
                     puzzleChild.Move(allowedMovement);
 
                     var puzzleChildString = puzzleChild.ToString();
-                    var isARepeatedPuzzle = puzzleRepeatControl.ContainsKey(puzzleChildString);
+                    var isARepeatedPuzzle = puzzleChildRepeatControl.ContainsKey(puzzleChildString);
+                    var childWasAParent = closedParents.ContainsKey(puzzleChildString);
 
-                    if (!isARepeatedPuzzle)
+                    if (!childWasAParent || !isARepeatedPuzzle)
                     {
                         var puzzleChildNode = tree.Insert(puzzleChild, parent);
 
-                        if (puzzleChild.IsDone())
+                        if (!childWasAParent)
                         {
-                            solutions[puzzleChildString] = puzzleChildNode;
+                            openedParents[puzzleChildString] = puzzleChildNode;
                         }
 
-                        events.onStateChange.Invoke(puzzleChild);
-                        openedParents[puzzleChildString] = puzzleChildNode;
-                        puzzleRepeatControl[puzzleChildString] = puzzleChildNode;
+                        if (!isARepeatedPuzzle)
+                        {
+                            if (puzzleChild.IsDone())
+                            {
+                                solutions[puzzleChildString] = puzzleChildNode;
+                            }
+
+                            events.onStateChange.Invoke(puzzleChild);
+                            puzzleChildRepeatControl[puzzleChildString] = puzzleChildNode;
+                        }
                     }
                 }
 
                 openedParents.Remove(parentPuzzleString);
+                closedParents[parentPuzzleString] = parent;
 
                 if (!openedParents.Any())
                 {
@@ -102,7 +114,7 @@ namespace puzzle_logic
                     break;
                 }
 
-                puzzleRepeatControl[parentPuzzleString] = parent;
+                puzzleChildRepeatControl[parentPuzzleString] = parent;
                 parent = openedParents.First().Value;
                 parentPuzzle = parent.Data;
                 parentPuzzleString = parentPuzzle.ToString();
